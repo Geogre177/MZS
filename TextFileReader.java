@@ -7,7 +7,7 @@ import java.io.IOException;
 
 public class TextFileReader {
 
-	private BufferedReader buffer;
+	private BufferedReader buffer;frtty
 	private String currentLine = "";
 	public TextFileReader(){ 
 		
@@ -16,7 +16,7 @@ public class TextFileReader {
 	public void open(String file){
 		
 		try {
-			close();
+			close();sfhs
 			
 			buffer = new BufferedReader(new FileReader(file));
 			
