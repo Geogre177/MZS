@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+  <script type="text/javascript">
+  function pauseaud() {
+    var my_page_audio  = document.getElementById('my_page_audio');
+    var x = document.getElementById('body2');
+    my_page_audio.pause();
+    x.style.display = 'none';
+  };
+/*Class Definitions*/
+  function Orchestra( cast_arr ) {
+    var self = this;
+    var the_cast = [];
+    var playlist_arr = [];
+    var audio_tracks = [];
+    var c_track = 0;
+    var current_track = c_track;
+    /*Public Methods*/
+    self.addToArrangement = function( char_obj ) {
+      var test = false;
+
+      //Test if obj is not already in the playlist AND has Audio
+      if ( !playlist_arr.includes( char_obj ) && char_obj.hasAudio ) {
+        test = true;
+      }
+
+      if ( test ) {
+        //If it's not in the playlist, add it
+        playlist_arr.push( char_obj );
+      }
+    }
+    self.removeFromArrangement = function( char_obj ) {
+    for(i = 0; i <= playlist_arr.length; i++){
+        if ( playlist_arr[i] === char_obj ) {
+          playlist_arr.splice(i, 1);
+        }
+      }
+    }
+  self.playArrangement = function() {
+    //Organize the Arrangement
+    //hero and doctor psyco logic
+    for(i = 0; i < playlist_arr.length; i++){
+      //If maniac and hero are played then it switches audio
+      if(playlist_arr[i].name == "hero"){
+	      for(v = 0; v < playlist_arr.length; v++){
+	      	if(playlist_arr[v].name == "maniac"){
+		        playlist_arr[i].name2 = "hero_psyco";
+				}
+			}
+        }
+      }
+       	 for(i = 0; i < playlist_arr.length; i++){
+	      //If maniac and doctor are played then it switches audio
+	      if(playlist_arr[i].name == "doctor"){
+		      for(v = 0; v < playlist_arr.length; v++){
+		      	if(playlist_arr[v].name == "maniac"){
+			        playlist_arr[i].name2 = "doctor_psyco";
+					}
+				}
+	        }
+	      }
+    //Add DAWN Character
+    playlist_arr.push(new Character( "night", 0, true, self, self.the_cast, "night" ) );
+    for(i = 0; i < playlist_arr.length; i++){
+      //If maniac is played then it adds the dawn audio
+      if(playlist_arr[i].name == "scout" || playlist_arr[i].name == "surgeon" || playlist_arr[i].name == "doctor" || playlist_arr[i].name == "hero"){
+        playlist_arr.push(new Character( "dusk", 6, true, self, self.the_cast, "dusk" ) );
+        }
+      }
+    playlist_arr.push(new Character( "wake up", 29, true, self, self.the_cast, "wake up" ) );
+ 
+
+    //Create the audio_tracks array
+    for(i = 0; i <= playlist_arr.length; i++){
+      if ( playlist_arr[i] != undefined ) {
+          if ( playlist_arr[i].audio() != null && playlist_arr[i].audio() != './Rsounds/named_audio/undefined.mp3' ) {
+            audio_tracks[playlist_arr[i].order] = playlist_arr[i].audio();
+          }
+        }
+      }
+
+/*
+      for(i = 0; i <= playlist_arr.length; i++){
+        if ( null ) {
+            playlist_arr[i] = './Rsounds/named_audio/blank.wav'
+          }
+        }
+*/
+    //Play the Arrangement
+    Array.prototype.clean = function(deleteValue) {
+  for (var i = 0; i < audio_tracks.length; i++) {
+    if (audio_tracks[i] == deleteValue) {
+      audio_tracks.splice(i, 1);
+      i--;
+    }
+  }
+};
+audio_tracks.clean(undefined);
+    self.play_track(c_track);
+  }
+
+  /*Private Methods*/
+  //Create audio object
+  self.play_track = function(c_track) {
+    var x = document.createElement("AUDIO");
+    // x.setAttribute("controls", "controls");
+    x.setAttribute("autoplay", "autoplay");
+    x.setAttribute("src", audio_tracks[c_track]);
+    x.onended = function() {
+        self.play_next_track();
+    };
+  }
+
+  //Cycle through the tracks
+  self.play_next_track = function() {
+    if(current_track < (audio_tracks.length - 1) && !undefined) {
+      current_track++;
+      self.play_track(current_track);
+    } else {
+      var z = document.getElementById('credits');
+      var w = document.getElementById('start_button');
+      z.style.visibility = 'visible';
+      w.style.visibility = 'visible';
+    }
+  }
+}
+  function Character( name, order, hasAudio, orchestra_obj, cast_arr, name2 ) {
+    var self = this;
+    var audio0 = new Audio('./Dart.wav');
+    var audio00 = new Audio('./hit-arg.wav');
+    /*Attributes*/
+    self.orchestra = orchestra_obj;
+    self.the_cast = cast_arr;
+    self.name = name;
+    self.name2 = name2;
+    self.order = order;
+    self.selected = false;
+    self.hasAudio = hasAudio;
+    self.image_unselected = "Images_for_OOP/" + this.name + "_unselected.jpg";
+    self.image_selected = "Images_for_OOP/" + this.name + "_selected.jpg";
+
+    /*Private Methods*/
+    self.changeDisplay = function() {
+      var jq_obj = $("#"+self.name);
+      if (!self.selected){
+        jq_obj.css({"border-color": "#000000", "border-width":"2px", "border-style":"solid"});
+        jq_obj.attr("src", self.image_unselected);
+        audio00.play();
+        self.orchestra.removeFromArrangement( self );
+      } else {
+        jq_obj.css({"border-color": "#ffff00", "border-width":"2px", "border-style":"solid"});
+        jq_obj.attr("src",self.image_selected);
+        audio0.play();
+        self.orchestra.addToArrangement( self );
+      }
+    }
+
+    /*Public Methods*/
+      /*Return JQ ID string*/
+      self.getID = function() {
+        return "#" + self.name;
+      }
+      self.getSelf = function() {
+        return self;
+      }
+      /*Return audio file name*/
+      self.audio = function () {
+        if ( self.hasAudio ) {
+          return './Rsounds/named_audio/' + this.name2 + '.mp3';
+        } else {
+          return null;
+        }
+      }
+      /*Handle Click Event*/
+      self.toggleSelection = function() {
+        if (self.selected) {
+          self.selected = false;
+        } else {
+          self.selected = true;
+        }
+        
+        self.RunBusinessRules();
+        self.changeDisplay();
+      }
+        /*Helper Functions*/
+ self.RunBusinessRules = function () {
+	 self.bizRule_ManiacNchildren();
+	 self.bizRule_NoLoneManiac();
+ }
+ 
+ /*Business Rules*/
+ self.bizRule_NoLoneManiac = function(){
+	if (self.name == 'children' && self.selected == false){
+		for (i = 0; i <= self.the_cast.length; i++ ){
+			try {
+				if(self.the_cast[i].name2 == 'maniac'){
+					var person = self.the_cast[i];
+					if (person.selected == true ) {
+						person.toggleSelection();
+					}
+					}
+			} catch (err) {
+				
+			}
+		}
+	}
+}
+
+self.bizRule_ManiacNchildren = function(){
+	if (self.name == 'maniac' && self.selected == true){
+		for (i = 0; i <= self.the_cast.length; i++ ){
+			try {
+				if(self.the_cast[i].name2 == 'children'){
+					var person = self.the_cast[i];
+					if (person.selected == false ) {
+						person.toggleSelection();
+					}
+				}
+			} catch (err) {
+				
+			}
+		}
+	}
+}
+};
+
+  function Stage( stage_name, character_array ) {
+    var self = this;
+    self.jq_stage_obj = $("#" + stage_name);
+    self.char_arr = character_array;
+
+    /*Public methods*/
+    self.letsPlay = function() {
+      for (i = 0; i < self.char_arr.length; i++ ) {
+        var obj_class = self.char_arr[i];
+        var str = "<img id=\"" + obj_class.name + "\" src=\"" + obj_class.image_unselected + "\"/>";
+        self.jq_stage_obj.append(str);
+      }
+    }
+  }
+  
+
+
+  /*MAIN FUNCTION BLOCK*/
+$(document).ready(function(){
+  /*Instantiate orchestra*/
+  var orchestra_obj = new Orchestra();
+
+  var cast_arr = new Array();
+  /*Instantiate characters*/
+  cast_arr.push( new Character( "zombie", 1, true, orchestra_obj, cast_arr, "zombie" ) );
+  cast_arr.push( new Character( "zombie2", 1, true, orchestra_obj, cast_arr, "zombie" ) );
+  cast_arr.push( new Character( "undead", 1, true, orchestra_obj, cast_arr, "zombie" ) );
+  cast_arr.push( new Character( "camo", 1, true, orchestra_obj, cast_arr, "zombie" ) );
+  cast_arr.push( new Character( "drifter", 2, true, orchestra_obj, cast_arr, "drifter" ) );
+  cast_arr.push( new Character( "scientist", 3, true, orchestra_obj, cast_arr, "scientist" ) );
+  cast_arr.push( new Character( "disillusioned", 4, true, orchestra_obj, cast_arr, "disillusioned" ) );
+  cast_arr.push( new Character( "maniac", 5, true, orchestra_obj, cast_arr, "maniac" ) );
+  cast_arr.push( new Character( "scout", 7, true, orchestra_obj, cast_arr, "scout" ) );
+  cast_arr.push( new Character( "doctor", 8, true, orchestra_obj, cast_arr, "doctor" ) );
+  cast_arr.push( new Character( "surgeon", 9, true, orchestra_obj, cast_arr, "surgeon" ) );
+  cast_arr.push( new Character( "hero", 10, true, orchestra_obj, cast_arr, "hero" ) );
+  cast_arr.push( new Character( "survivor", null, false, orchestra_obj, cast_arr, "survivor" ) );
+  cast_arr.push( new Character( "survivor2", null, false, orchestra_obj, cast_arr, "survivor" ) );
+  cast_arr.push( new Character( "children", null, false, orchestra_obj, cast_arr, "children" ) );
+  cast_arr.push( new Character( "survivalist", null, false, orchestra_obj, cast_arr, "survivalist" ) );
+  
+  //Add cast_arr to orchestra_obj
+  orchestra_obj.the_cast = cast_arr;
+
+  /*Set the Stage*/
+  var stage = new Stage( "Ready", cast_arr);
+  stage.letsPlay();
+
+  /*Assign actions to cast members*/
+  var nodup_arr = [];
+  for ( i = 0; i < cast_arr.length; i++ ) {
+    var obj_class = cast_arr[i];
+    $(obj_class.getID()).bind('click', {msg: obj_class}, function(event) {
+                event.data.msg.toggleSelection();
+            }
+    );
+    if ( $.inArray( cast_arr[i].name2, nodup_arr ) == -1 ) {
+      nodup_arr.push(cast_arr[i].name2);
+    }
+  }
+  /*Assign Orchestra Play Action to Button*/
+  $('#ok_button').bind('click', {msg: orchestra_obj}, function(event) {
+              event.data.msg.playArrangement();
+          }
+  );
+});
+
+  </script>
+  <style>
+  @import url("https://fonts.googleapis.com/css?family=Special+Elite");
+@import url("https://fonts.google.com/?query=sp&selection.family=Special+Elite");
+@font-face {
+font-family: 'Special Elite', cursive;
+font-style: normal;
+font-weight: 400;
+src: local("Special Elite"), local("Special Elite"), url(https://fonts.googleapis.com/css?family=Special+Elite) format("woff2");
+unicode-range: U+0460-052F, U+20B4, U+2DE0-2DFF, U+A640-A69F;
+}
+@font-face {
+font-family: 'special elite';
+/*src: url("https://fonts.google.com/?query=sp&selection.family=Special+Elite");*/
+/* IE9 Compat Modes */
+}
+  body{
+    background-color: black;
+    font-family: 'Special Elite', cursive;
+  }
+  div{
+    color: white;
+    font-family: 'Special Elite', cursive;
+  }
+  img{
+    width: 23%;
+    height: 13%;
+    border: 1px #000 solid;
+  }
+  /* Style the tab */
+div.tab {
+  margin-left: 37%;
+  margin-right: 35%;
+    overflow: hidden;
+    border: 1px solid #ccc;
+    background-color: #000;
+    font-family: 'Special Elite', cursive;
+}
+
+/* Style the buttons inside the tab */
+div.tab button {
+    background-color: inherit;
+    float: center;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 5% 5%;
+    transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+div.tab button:hover {
+    background-color: #ddd;
+}
+
+/* Create an active/current tablink class */
+div.tab button.active {
+    background-color: #fff;
+}
+
+/* Style the tab content */
+.tabcontent {
+    display: none;
+    padding: auto;
+    border: 1px solid #ccc;
+    border-top: none;
+    color: #FFF;
+}
+div.buttons {
+  background-color: inherit;
+  color: #FFF;
+};
+  </style>
+</head>
+<body>
+  <div class = "body2" id = "body2">
+  <audio id = "my_page_audio" autoplay="autoplay" loop="Zombie-hoodoo.mp3" volume=200%>
+   <source src="zombie-hoodoo.mp3" type="audio/mpeg">
+   Your browser does not support the audio element.
+ </audio>
+  <div class="tab">
+<a href="default.html"><button class="tablinks" style="background-color: #000; color: #FFF;">MZS</button></a>
+<a href="testing.html"><button class="tablinks" style="background-color: #000; color: #FFF;">Audio tests</button></a>
+</div>
+  <div align="center" id="Ready">
+    <h2>Click on characters to choose what cards will be played</h2>
+</div>
+<img src= "go_button3.png" id= "ok_button" onclick= "pauseaud()" style = "display: block; margin-left: auto; margin-right: auto;"></img>
+</div>
+<div class="buttons">
+<a href="default.html"><img src= "play_again_button2.png" id= "start_button" style = "display: block; margin-bottom: auto; margin-top: 0; margin-left: auto; margin-right: auto; visibility: hidden;"></img></a>
+<a href="credits3b.html"><img src= "Credits_button2.png" id= "credits" style = "display: block; margin-left: auto; margin-bottom: auto; margin-top: 0; margin-right: auto; visibility: hidden;"></img></a>
+</div>
+</body>
+</html>
